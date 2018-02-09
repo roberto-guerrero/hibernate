@@ -1,5 +1,6 @@
 package com.javacodegeeks.snippets.enterprise.hibernate;
 
+import javax.persistence.Cacheable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -7,9 +8,18 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
+@Cacheable
+@Cache(region="Employee", usage=CacheConcurrencyStrategy.READ_WRITE)
 @Entity
 @Table(name="employee")
+@FilterDef(name="onlyOlderThan", parameters=@ParamDef(name="olderThan", type="int"))
+@Filter(name="onlyOlderThan", condition="age < :olderThan")
 public class Employee {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)

@@ -2,6 +2,8 @@ package com.javacodegeeks.snippets.enterprise.hibernate;
 
 import java.util.List;
 
+import org.hibernate.Criteria;
+import org.hibernate.Filter;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -19,8 +21,14 @@ public class App {
 		create(em2);
 		create(em3);
 		
-		System.out.println(" =======READ =======");
-        List<Employee> ems1 = read();
+		System.out.println(" =======READ ALL =======");
+        List<Employee> ems0 = read();
+        for(Employee e: ems0) {
+            System.out.println(e.toString());
+        }
+		
+		System.out.println(" =======READ WITH PARAM FILTER =======");
+        List<Employee> ems1 = readFilter();
         for(Employee e: ems1) {
             System.out.println(e.toString());
         }
@@ -45,12 +53,20 @@ public class App {
             System.out.println(e.toString());
         }
         
+        System.out.println(" =======READ UNIQUE USER =======");
+        Employee ems4 = findUser("Mary Rose");
+        System.out.println(ems4.toString());
+        
+        System.out.println(" =======READ FROM CACHE =======");
+        Employee ems5 = findUser("Mary Rose");
+        System.out.println(ems5.toString());
+        
         System.out.println(" =======DELETE ALL ======= ");
         deleteAll();
         
         System.out.println(" =======READ =======");
-        List<Employee> ems4 = read();
-        for(Employee e: ems4) {
+        List<Employee> ems6 = read();
+        for(Employee e: ems6) {
             System.out.println(e.toString());
         }
         
@@ -83,6 +99,15 @@ public class App {
 		System.out.println("Found " + employees.size() + " Employees");
 		return employees;
 
+	}
+	
+	public static List<Employee> readFilter() {
+		Session session = getSessionFactory().openSession();
+		Criteria c = session.createCriteria(Employee.class);
+		Filter ageFilter = session.enableFilter("onlyOlderThan");
+		ageFilter.setParameter("olderThan", new Integer(30));
+		List<Employee> employees = (List<Employee>)c.list();
+		return employees;
 	}
 
 	public static void update(Employee e) {
@@ -123,6 +148,16 @@ public class App {
 		session.getTransaction().commit();
 		session.close();
 		System.out.println("Successfully deleted all employees.");
+
+	}
+	
+	public static Employee findUser(String name) {
+		Session session = getSessionFactory().openSession();
+		Query q = session.createQuery("FROM Employee where name = :name");
+		q.setString("name", name);
+		Employee employee = (Employee) q.uniqueResult();
+		session.close();
+		return employee;
 
 	}
 	
